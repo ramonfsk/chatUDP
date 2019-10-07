@@ -1,0 +1,10 @@
+Classe|Pacote|664|494|-1687|194|Cafeteira - Versão 1.11 - Java|1|0|
+CafLabel|lblServidor|23|22|57|13|Servidor| |0
+CafList|objeto3|20|50|615|348| | |0
+CafLabel|lblMensagem|28|416|69|16|Mensagem| |0
+CafTextField|txtMensagem|100|415|450|22| | |0
+CafButton|btnEnviarMsg|565|410|70|31|Enviar| |2
+CafTextField|txtServidor|78|18|195|21| | |0
+CafLabel|lblNome|290|23|44|14|Nome| |0
+CafTextField|txtNome|332|20|175|21| | |0
+CafButton|btnConectar|525|15|100|30|Conectar| |2
