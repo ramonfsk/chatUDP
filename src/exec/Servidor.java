@@ -1,59 +1,60 @@
 package exec;
 
-import java.io.*;
 import java.net.*;
 import java.util.*;
+import javax.swing.JOptionPane;
 
-public class Servidor implements Runnable {
+public class Servidor {
+	
 	public final static int PORTA = 7001;
-	private final static int BUFFER = 1024;
-	
+	public final static int TAM_BUFFER = 1024;
 	private DatagramSocket socket;
-	private ArrayList<InetAddress> enderecoClientes;
-	private ArrayList<Integer> portaClientes;
-	private HashSet<String> clientesExistentes; //HashSet garante que não haja repetição de clientes.
+	private List<InetAddress> enderecos;
+	private List<Integer> portas;
+	private List<String> nomes;
+	//private Map<InetAddress, Integer> clnts; #HasMap com InetAddress e Porta do Cliente
+	//private List<String> idClnts; #ArrayList com os nomes de clientes
 	
-	public Servidor() throws IOException {
-		socket = new DatagramSocket(PORTA);
-		enderecoClientes = new ArrayList<InetAddress>();
-		portaClientes = new ArrayList<Integer>();
-		clientesExistentes = new HashSet<String>();
+	public Servidor() {
+		try {
+			this.socket = new DatagramSocket(Servidor.PORTA);
+			this.enderecos = new ArrayList<InetAddress>();
+			this.portas = new ArrayList<Integer>();
+			this.nomes = new ArrayList<String>();
+		} catch (Exception e) { e.printStackTrace(); }
 	}
 	
-	@Override
-	public void run() {
-		byte[] buffer = new byte[BUFFER];
-		while(true) {
-			try {
-				Arrays.fill(buffer, (byte)0);
-				DatagramPacket pacote = new DatagramPacket(buffer, buffer.length);
-				socket.receive(pacote);
-				
-				String tmpMsg = new String(buffer);//Pegou o conteúdo da msg
-				InetAddress tmpEndereco = pacote.getAddress();//Pegou o endereco IP
-				int tmpPorta = pacote.getPort();//Pegou a porta
-				String id = tmpEndereco.toString() + ":"+tmpPorta;//Criou um id único para o cliente
-				
-				//Adiciona as informacoes dos clientes em arrays
-				if(!clientesExistentes.contains(id)) {
-					clientesExistentes.add(id);
-					enderecoClientes.add(tmpEndereco);
-					portaClientes.add(tmpPorta);
-				}
-				
-				System.out.println(id+" : "+tmpMsg);
-				byte[] data = (id+" : "+tmpMsg).getBytes();
-				for(int i=0; i < enderecoClientes.size(); i++) {
-					
-				}
-				
-			} catch (Exception e) { e.printStackTrace(); }
+	public void addCliente(DatagramPacket info, String nome) {
+		if(this.nomes.contains(nome))
+			JOptionPane.showMessageDialog(null, "Nome de cliente já existe, ecolha outro!", "ERROR", JOptionPane.ERROR_MESSAGE);
+		else {
+			this.enderecos.add(info.getAddress());
+			this.portas.add(info.getPort());
+			this.nomes.add(nome);
 		}
 	}
 	
+	public void remCliente(DatagramPacket info, String nome) {
+		for(int i = 0; i < this.nomes.size(); i++) {
+			if((this.nomes.get(i).compareTo(nome)) == 0) {
+				this.enderecos.remove(i);
+				this.portas.remove(i);
+				this.nomes.remove(i);
+			}
+		}
+	}
+	
+	public DatagramSocket obtemSocket() {
+		return this.socket;
+	}
+	
+	public boolean conectarCliente(DatagramPacket info, String nome, String msg) {
+		if((msg.compareTo("CMD|CNNT")) == 0)
+			this.addCliente(info, nome);
+	}
+	
 	public static void main(String[] args) {
-		try {
-			(new Servidor()).run();
-		} catch (IOException e) { e.printStackTrace(); }
+		(new Thread(new ReceberMsgs())).start();
+		(new Thread(new EnviarMsgs())).start();
 	}
 }
